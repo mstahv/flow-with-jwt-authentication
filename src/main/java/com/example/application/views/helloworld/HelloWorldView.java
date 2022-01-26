@@ -1,35 +1,51 @@
 package com.example.application.views.helloworld;
 
+import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.VaadinSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
+
 import javax.annotation.security.PermitAll;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 @PageTitle("Hello World")
 @Route(value = "hello", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 @PermitAll
-public class HelloWorldView extends HorizontalLayout {
+public class HelloWorldView extends VerticalLayout {
 
-    private TextField name;
+    @Autowired
+    AuthenticatedUser authenticatedUser;
+
     private Button sayHello;
 
     public HelloWorldView() {
-        name = new TextField("Your name");
-        sayHello = new Button("Say hello");
+
+        /*
+         * This trivial Vaadin session serializes just fine. To make testing
+         * pros of JWT authentication, make it non-serializable. Object does
+         * not serialize because of Java :-). This hack will make the session
+         * lost on each server restart.
+         */
+        VaadinSession.getCurrent().setAttribute("foo", new Object());
+
+        sayHello = new Button("Say hello!");
         sayHello.addClickListener(e -> {
-            Notification.show("Hello " + name.getValue());
+            Notification.show("Hello " + authenticatedUser.get().get().getName());
         });
 
-        setMargin(true);
-        setVerticalComponentAlignment(Alignment.END, name, sayHello);
-
-        add(name, sayHello);
+        add(sayHello);
     }
 
 }
