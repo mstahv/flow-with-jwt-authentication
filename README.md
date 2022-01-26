@@ -1,7 +1,19 @@
-# Flow with JWT authentication
+# Vaadin Flow example with JWT authentication
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+This example project is generated using start.vaadin.com, with Spring Security on. After
+that the Spring Security configuration is modified so that it JWT is used to 
+store the authentication information, instead of the usual Java Servlet Session.
+
+Even though Vaadin Flow app needs session for end-users anyways, this approach improves 
+developer and end user experience when deploying new versions (no need to re-login when 
+new UI is deployed).
+
+The `HelloWorldView` contains a hack that makes this rather trivial Vaadin UI
+non-serializable and this way lose the session on server restart. This is just to 
+make testing the approach easier. To compare to "default behaviour", uncomment the 
+JWT configuration from [SecurityConfiguration](https://github.com/mstahv/flow-with-jwt-authentication/blob/main/src/main/java/com/example/application/security/SecurityConfiguration.java#L39)
+and restart the application (also clear cookies).
+
 
 ## Running the application
 
