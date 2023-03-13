@@ -2,21 +2,21 @@ package com.example.application.data.service;
 
 import com.example.application.data.entity.User;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-    private UserRepository repository;
+    private final UserRepository repository;
 
-    public UserService(@Autowired UserRepository repository) {
+    public UserService(UserRepository repository) {
         this.repository = repository;
     }
 
-    public Optional<User> get(Integer id) {
+    public Optional<User> get(Long id) {
         return repository.findById(id);
     }
 
@@ -24,12 +24,16 @@ public class UserService {
         return repository.save(entity);
     }
 
-    public void delete(Integer id) {
+    public void delete(Long id) {
         repository.deleteById(id);
     }
 
     public Page<User> list(Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    public Page<User> list(Pageable pageable, Specification<User> filter) {
+        return repository.findAll(filter, pageable);
     }
 
     public int count() {

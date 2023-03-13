@@ -1,72 +1,37 @@
 package com.example.application.views;
 
+import com.example.application.components.appnav.AppNav;
+import com.example.application.components.appnav.AppNavItem;
 import com.example.application.data.entity.User;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.helloworld.HelloWorldView;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Footer;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Header;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
-
+import com.vaadin.flow.theme.lumo.LumoUtility;
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
  * The main view is a top-level placeholder for other views.
  */
-@PageTitle("Main")
 public class MainLayout extends AppLayout {
 
-    /**
-     * A simple navigation item component, based on ListItem element.
-     */
-    public static class MenuItemInfo extends ListItem {
-
-        private final Class<? extends Component> view;
-
-        public MenuItemInfo(String menuTitle, String iconClass, Class<? extends Component> view) {
-            this.view = view;
-            RouterLink link = new RouterLink();
-            // Use Lumo classnames for various styling
-            link.addClassNames("flex", "mx-s", "p-s", "relative", "text-secondary");
-            link.setRoute(view);
-
-            Span text = new Span(menuTitle);
-            // Use Lumo classnames for various styling
-            text.addClassNames("font-medium", "text-s");
-
-            link.add(new LineAwesomeIcon(iconClass), text);
-            add(link);
-        }
-
-        public Class<?> getView() {
-            return view;
-        }
-
-        /**
-         * Simple wrapper to create icons using LineAwesome iconset. See
-         * https://icons8.com/line-awesome
-         */
-        @NpmPackage(value = "line-awesome", version = "1.3.0")
-        public static class LineAwesomeIcon extends Span {
-            public LineAwesomeIcon(String lineawesomeClassnames) {
-                // Use Lumo classnames for suitable font size and margin
-                addClassNames("me-s", "text-l");
-                if (!lineawesomeClassnames.isEmpty()) {
-                    addClassNames(lineawesomeClassnames);
-                }
-            }
-        }
-
-    }
-
-    private H1 viewTitle;
+    private H2 viewTitle;
 
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
@@ -76,81 +41,74 @@ public class MainLayout extends AppLayout {
         this.accessChecker = accessChecker;
 
         setPrimarySection(Section.DRAWER);
-        addToNavbar(true, createHeaderContent());
-        addToDrawer(createDrawerContent());
+        addDrawerContent();
+        addHeaderContent();
     }
 
-    private Component createHeaderContent() {
+    private void addHeaderContent() {
         DrawerToggle toggle = new DrawerToggle();
-        toggle.addClassName("text-secondary");
-        toggle.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
         toggle.getElement().setAttribute("aria-label", "Menu toggle");
 
-        viewTitle = new H1();
-        viewTitle.addClassNames("m-0", "text-l");
+        viewTitle = new H2();
+        viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
 
-        Header header = new Header(toggle, viewTitle);
-        header.addClassNames("bg-base", "border-b", "border-contrast-10", "box-border", "flex", "h-xl", "items-center",
-                "w-full");
-        return header;
+        addToNavbar(true, toggle, viewTitle);
     }
 
-    private Component createDrawerContent() {
-        H2 appName = new H2("Flow with JWT authentication");
-        appName.addClassNames("flex", "items-center", "h-xl", "m-0", "px-m", "text-m");
+    private void addDrawerContent() {
+        H1 appName = new H1("My App");
+        appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
+        Header header = new Header(appName);
 
-        com.vaadin.flow.component.html.Section section = new com.vaadin.flow.component.html.Section(appName,
-                createNavigation(), createFooter());
-        section.addClassNames("flex", "flex-col", "items-stretch", "max-h-full", "min-h-full");
-        return section;
+        Scroller scroller = new Scroller(createNavigation());
+
+        addToDrawer(header, scroller, createFooter());
     }
 
-    private Nav createNavigation() {
-        Nav nav = new Nav();
-        nav.addClassNames("border-b", "border-contrast-10", "flex-grow", "overflow-auto");
-        nav.getElement().setAttribute("aria-labelledby", "views");
+    private AppNav createNavigation() {
+        // AppNav is not yet an official component.
+        // For documentation, visit https://github.com/vaadin/vcf-nav#readme
+        AppNav nav = new AppNav();
 
-        // Wrap the links in a list; improves accessibility
-        UnorderedList list = new UnorderedList();
-        list.addClassNames("list-none", "m-0", "p-0");
-        nav.add(list);
-
-        for (MenuItemInfo menuItem : createMenuItems()) {
-            if (accessChecker.hasAccess(menuItem.getView())) {
-                list.add(menuItem);
-            }
+        if (accessChecker.hasAccess(HelloWorldView.class)) {
+            nav.addItem(new AppNavItem("Hello World", HelloWorldView.class, LineAwesomeIcon.GLOBE_SOLID.create()));
 
         }
-        return nav;
-    }
 
-    private MenuItemInfo[] createMenuItems() {
-        return new MenuItemInfo[]{ //
-                new MenuItemInfo("Hello World", "la la-globe", HelloWorldView.class), //
-        };
+        return nav;
     }
 
     private Footer createFooter() {
         Footer layout = new Footer();
-        layout.addClassNames("flex", "items-center", "my-s", "px-m", "py-xs");
 
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-            Avatar avatar = new Avatar(user.getName(), user.getProfilePictureUrl());
-            avatar.addClassNames("me-xs");
+            Avatar avatar = new Avatar(user.getName());
+            StreamResource resource = new StreamResource("profile-pic",
+                    () -> new ByteArrayInputStream(user.getProfilePicture()));
+            avatar.setImageResource(resource);
+            avatar.setThemeName("xsmall");
+            avatar.getElement().setAttribute("tabindex", "-1");
 
-            ContextMenu userMenu = new ContextMenu(avatar);
-            userMenu.setOpenOnClick(true);
-            userMenu.addItem("Logout", e -> {
+            MenuBar userMenu = new MenuBar();
+            userMenu.setThemeName("tertiary-inline contrast");
+
+            MenuItem userName = userMenu.addItem("");
+            Div div = new Div();
+            div.add(avatar);
+            div.add(user.getName());
+            div.add(new Icon("lumo", "dropdown"));
+            div.getElement().getStyle().set("display", "flex");
+            div.getElement().getStyle().set("align-items", "center");
+            div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
+            userName.add(div);
+            userName.getSubMenu().addItem("Sign out", e -> {
                 authenticatedUser.logout();
             });
 
-            Span name = new Span(user.getName());
-            name.addClassNames("font-medium", "text-s", "text-secondary");
-
-            layout.add(avatar, name);
+            layout.add(userMenu);
         } else {
             Anchor loginLink = new Anchor("login", "Sign in");
             layout.add(loginLink);

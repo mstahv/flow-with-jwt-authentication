@@ -3,21 +3,15 @@ package com.example.application.views.helloworld;
 import com.example.application.security.AuthenticatedUser;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
-import javax.annotation.security.PermitAll;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import jakarta.annotation.security.PermitAll;
 
 @PageTitle("Hello World")
 @Route(value = "hello", layout = MainLayout.class)
