@@ -1,25 +1,24 @@
 package com.example.application.security;
 
 import com.example.application.views.login.LoginView;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
+import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
+import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @Configuration
-public class SecurityConfiguration extends VaadinWebSecurity {
+public class SecurityConfiguration {
 
     public static final String LOGOUT_URL = "/";
 
@@ -31,18 +30,25 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/images/*.png").permitAll()
+                .requestMatchers("/line-awesome/**").permitAll()
+        );
 
-        http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/images/*.png")).permitAll();
+        http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {
+            configurer.loginView(LoginView.class, LOGOUT_URL);
+        });
 
-        // Icons from the line-awesome addon
-        http.authorizeHttpRequests().requestMatchers(new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll();
-        super.configure(http);
-        setLoginView(http, LoginView.class);
-        setStatelessAuthentication(http, new SecretKeySpec(Base64.getDecoder().decode(authSecret), JwsAlgorithms.HS256), "com.example.application");
+        // Enable stateless authentication
+        http.with(new VaadinStatelessSecurityConfigurer<>(),
+                cfg -> cfg.withSecretKey().secretKey(
+                        new SecretKeySpec(Base64.getDecoder().decode(authSecret),
+                                JwsAlgorithms.HS256)
+                ).and().issuer("com.example.application")
+        );
 
+        return http.build();
     }
-
-    
 }
