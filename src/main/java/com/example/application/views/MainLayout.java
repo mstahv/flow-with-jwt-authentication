@@ -18,16 +18,15 @@ import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
-import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
 /**
@@ -53,7 +52,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private void addHeaderContent() {
         DrawerToggle toggle = new DrawerToggle();
-        toggle.getElement().setAttribute("aria-label", "Menu toggle");
+        // TODO check if this is needed!?
+        toggle.setAriaLabel("Menu toggle");
 
         viewTitle = new H2();
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
@@ -92,9 +92,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+            avatar.setImageHandler(downloadEvent -> {
+                downloadEvent.setContentType("image/png");
+                downloadEvent.getOutputStream().write(user.getProfilePicture());
+            });
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
@@ -106,9 +107,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             div.add(avatar);
             div.add(user.getName());
             div.add(new Icon("lumo", "dropdown"));
-            div.getElement().getStyle().set("display", "flex");
-            div.getElement().getStyle().set("align-items", "center");
-            div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
+            div.getElement().getStyle().setDisplay(Style.Display.FLEX);
+            div.getElement().getStyle().setAlignItems(Style.AlignItems.CENTER);
+            div.getElement().getStyle().setGap("var(--lumo-space-s)");
             userName.add(div);
             userName.getSubMenu().addItem("Sign out", e -> {
                 authenticatedUser.logout();
