@@ -14,7 +14,6 @@ make testing the approach easier. To compare to "default behaviour", uncomment t
 JWT configuration from [SecurityConfiguration](https://github.com/mstahv/flow-with-jwt-authentication/blob/main/src/main/java/com/example/application/security/SecurityConfiguration.java#L39)
 and restart the application (also clear cookies).
 
-
 ## Running the application
 
 The project is a standard Maven project. To run it from the command line,
@@ -27,13 +26,7 @@ IDEs](https://vaadin.com/docs/latest/flow/guide/step-by-step/importing) (Eclipse
 
 ## Deploying to Production
 
-To create a production build, call `mvnw clean package -Pproduction` (Windows),
-or `./mvnw clean package -Pproduction` (Mac & Linux).
-This will build a JAR file with all the dependencies and front-end resources,
-ready to be deployed. The file can be found in the `target` folder after the build completes.
-
-Once the JAR file is built, you can run it using
-`java -jar target/flowwithjwtauthentication-1.0-SNAPSHOT.jar`
+Like with regular Spring Boot projects.
 
 ## Project structure
 
